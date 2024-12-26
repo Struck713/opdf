@@ -4,7 +4,29 @@ import { parse } from "./parser";
 import PDFDocument from "pdfkit"
 import fs from "fs"
 
-const tree = parse(`
+const render = (input: string) => {
+  const pdf = new PDFDocument();
+  const colors = ["gray", "black", "red"]
+  let color = 0;
+  const helper = (node: Node, offsetX = 0, offsetY = 0) => {
+    const { top, left, width, height } = node.getComputedLayout();
+    const x = offsetX + left + node.getComputedBorder(Edge.Left);
+    const y = offsetY + top + node.getComputedBorder(Edge.Top);
+    pdf.rect(x, y, width, height)
+      .fillAndStroke(colors[color++ % colors.length]);
+    for (let i = 0; i < node.getChildCount(); i++) helper(node.getChild(i), x, y);
+  }
+
+  const tree = parse(input);
+  const root = layout(tree);
+  root.setHeight(pdf.page.height);
+  root.setWidth(pdf.page.width);
+  root.calculateLayout(undefined, undefined, Direction.LTR);
+  helper(root);
+  return pdf;
+}
+
+const pdf = render(`
   <Node
     style={{
       alignContent: 'flex-start',
@@ -17,24 +39,5 @@ const tree = parse(`
   </Node>
 `);
 
-const root = layout(tree);
-const pdf = new PDFDocument();
-root.setHeight(pdf.page.height);
-root.setWidth(pdf.page.width);
-root.calculateLayout(undefined, undefined, Direction.LTR);
-
-const colors = ["gray", "black", "red"]
-let color = 0;
-
-const draw = (node: Node, offsetX = 0, offsetY = 0) => {
-  const { top, left, width, height } = node.getComputedLayout();
-  const x = offsetX + left + node.getComputedMargin(Edge.Left) + node.getComputedPadding(Edge.Left);
-  const y = offsetY + top + node.getComputedMargin(Edge.Top) + node.getComputedPadding(Edge.Top);
-  pdf.rect(x, y, width, height)
-    .fillAndStroke(colors[color++ % colors.length]);
-  for (let i = 0; i < node.getChildCount(); i++) draw(node.getChild(i), x, y);
-}
-
-pdf.pipe(fs.createWriteStream("./test.pdf"));
-draw(root);
-pdf.end()
+pdf.pipe(fs.createWriteStream("./output.pdf"));
+pdf.end();
