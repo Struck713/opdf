@@ -12,11 +12,15 @@ type Style = Nullable<{
   alignContent: Align;
   flexWrap: Wrap;
   padding: Padding;
+  paddingLeft: Padding;
+  paddingRight: Padding;
+  paddingTop: Padding;
+  paddingBottom: Padding;
   margin: Margin;
-  marginLeft: Margin,
-  marginRight: Margin,
-  marginTop: Margin,
-  marginBottom: Margin,
+  marginLeft: Margin;
+  marginRight: Margin;
+  marginTop: Margin;
+  marginBottom: Margin;
 }>;
 
 const readAttribute = <T>(attributes: Attribute[], name: string) => {
@@ -33,12 +37,31 @@ export const layout = (tree: Node) => {
     if (typeof node == "object" && "children" in node) {
       const style = readAttribute<Style>(node.attributes, "style");
       if (style) {
-        const { width, height, flex, padding, margin, marginTop, marginLeft, marginRight, marginBottom alignContent, flexWrap } =
-          style;
+        const {
+          width,
+          height,
+          flex,
+          padding,
+          paddingTop,
+          paddingLeft,
+          paddingRight,
+          paddingBottom,
+          margin,
+          marginTop,
+          marginLeft,
+          marginRight,
+          marginBottom,
+          alignContent,
+          flexWrap,
+        } = style;
         child.setWidth(width);
         child.setHeight(height);
         child.setFlex(flex);
         child.setPadding(Edge.All, padding);
+        child.setPadding(Edge.Left, paddingLeft);
+        child.setPadding(Edge.Right, paddingRight);
+        child.setPadding(Edge.Top, paddingTop);
+        child.setPadding(Edge.Bottom, paddingBottom);
         child.setMargin(Edge.All, margin);
         child.setMargin(Edge.Left, marginLeft);
         child.setMargin(Edge.Right, marginRight);
