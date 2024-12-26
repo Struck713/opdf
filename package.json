@@ -1,0 +1,16 @@
+{
+  "name": "opdf",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "acorn": "^8.14.0",
+    "acorn-jsx": "^5.3.2",
+    "yoga-layout": "^3.2.1"
+  }
+}
