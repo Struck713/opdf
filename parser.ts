@@ -14,14 +14,16 @@ export type Node =
   | string
   | {
       name: string;
-      attributes: {
-        name: string;
-        value: Primatives;
-      }[];
+      attributes: Attribute[];
       children: Node[];
     };
 
-type Primatives = string | number | bigint | boolean | RegExp | object | null | undefined;
+export type Attribute = {
+  name: string,
+  value: Primatives
+}
+
+export type Primatives = string | number | bigint | boolean | RegExp | object | null | undefined;
 
 const parser = Parser.extend(jsx({ allowNamespaces: false }));
 export const parse = (input: string) => {

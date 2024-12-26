@@ -1,48 +1,40 @@
-import type { Node } from "yoga-layout";
+import { Direction, Edge, type Node } from "yoga-layout";
 import { layout } from "./layout";
 import { parse } from "./parser";
+import PDFDocument from "pdfkit"
+import fs from "fs"
 
 const tree = parse(`
-  <Layout config={{useWebDefaults: false}}>
-      <Node style={{height: 60}} />
-      <Node
-        style={{
-          position: "absolute",
-          width: "100%",
-          bottom: 0,
-          height: 64,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-around",
-        }}
-      >
-        <Node style={{height: 40, width: 40}} />
-        <Node style={{height: 40, width: 40}} />
-        <Node style={{height: 40, width: 40}} />
-        <Node style={{height: 40, width: 40}} />
-      </Node>
-      <Node style={{flex: 2, marginInline: 10}} />
-      <Node
-        style={{
-          position: "absolute",
-          width: "100%",
-          bottom: 0,
-          height: 64,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-around",
-        }}
-      >
-        <Node style={{height: 40, width: 40}} />
-        <Node style={{height: 40, width: 40}} />
-        <Node style={{height: 40, width: 40}} />
-        <Node style={{height: 40, width: 40}} />
-      </Node>
-  </Layout>
+  <Node
+    style={{
+      alignContent: 'flex-start',
+      flexWrap: 'wrap',
+    }}>
+    <Node style={{margin: 5, height: 50, width: 50}} />
+    <Node style={{margin: 5, height: 50, width: 50}} />
+    <Node style={{margin: 5, height: 50, width: 50}} />
+    <Node style={{margin: 5, height: 50, width: 50}} />
+  </Node>
 `);
 
 const root = layout(tree);
-root.setHeight(100);
-root.setWidth(100);
+const pdf = new PDFDocument();
+root.setHeight(pdf.page.height);
+root.setWidth(pdf.page.width);
+root.calculateLayout(undefined, undefined, Direction.LTR);
 
-// console.log(JSON.stringify(tree, null, 2));
+const colors = ["gray", "black", "red"]
+let color = 0;
+
+const draw = (node: Node, offsetX = 0, offsetY = 0) => {
+  const { top, left, width, height } = node.getComputedLayout();
+  const x = offsetX + left + node.getComputedMargin(Edge.Left) + node.getComputedPadding(Edge.Left);
+  const y = offsetY + top + node.getComputedMargin(Edge.Top) + node.getComputedPadding(Edge.Top);
+  pdf.rect(x, y, width, height)
+    .fillAndStroke(colors[color++ % colors.length]);
+  for (let i = 0; i < node.getChildCount(); i++) draw(node.getChild(i), x, y);
+}
+
+pdf.pipe(fs.createWriteStream("./test.pdf"));
+draw(root);
+pdf.end()
